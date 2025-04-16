@@ -8,8 +8,11 @@ self.postMessage({ status: "device", device });
 // Load the model
 const model_id = "onnx-community/Kokoro-82M-v1.0-ONNX";
 const tts = await KokoroTTS.from_pretrained(model_id, {
-  dtype: device === "wasm" ? "q8" : "fp32",
+  dtype: 'fp16',
   device,
+  remoteHost: 'http://0.0.0.0:8000/model/',
+  remotePathTemplate: '{model}',
+  localModelPath: 'indexeddb://'
 }).catch((e) => {
   self.postMessage({ status: "error", error: e.message });
   throw e;

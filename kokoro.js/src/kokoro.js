@@ -1,4 +1,4 @@
-import { StyleTextToSpeech2Model, AutoTokenizer, Tensor, RawAudio } from "@huggingface/transformers";
+import { StyleTextToSpeech2Model, AutoTokenizer, Tensor, RawAudio, env } from "@huggingface/transformers";
 import { phonemize } from "./phonemize.js";
 import { TextSplitterStream } from "./splitter.js";
 import { getVoiceData, VOICES } from "./voices.js";
@@ -36,9 +36,24 @@ export class KokoroTTS {
    * @param {"fp32"|"fp16"|"q8"|"q4"|"q4f16"} [options.dtype="fp32"] The data type to use.
    * @param {"wasm"|"webgpu"|"cpu"|null} [options.device=null] The device to run the model on.
    * @param {import("@huggingface/transformers").ProgressCallback} [options.progress_callback=null] A callback function that is called with progress information.
+   * @param {string} [options.remoteHost="http://0.0.0.0:8000/model/"] Remote host of the model.
+   * @param {string} [options.remotePathTemplate="{model}"] Path template of the host model.
+   * @param {string} [options.localModelPath="indexeddb://"] Place where the model stored in browser.
    * @returns {Promise<KokoroTTS>} The loaded model
    */
-  static async from_pretrained(model_id, { dtype = "fp32", device = null, progress_callback = null } = {}) {
+  static async from_pretrained(model_id, { dtype = "fp32", device = null, progress_callback = null, remoteHost = null, remotePathTemplate = null, localModelPath = null } = {}) {
+    if (remoteHost) {
+      console.log(`set remoteHost: ${remoteHost}`);
+      env.remoteHost = remoteHost;
+    }
+    if (remotePathTemplate) {
+      console.log(`set remotePathTemplate: ${remotePathTemplate}`);
+      env.remotePathTemplate = remotePathTemplate;
+    }
+    if (localModelPath) {
+      console.log(`set localModelPath: ${localModelPath}`);
+      env.localModelPath = localModelPath;
+    }
     const model = StyleTextToSpeech2Model.from_pretrained(model_id, { progress_callback, dtype, device });
     const tokenizer = AutoTokenizer.from_pretrained(model_id, { progress_callback });
 
